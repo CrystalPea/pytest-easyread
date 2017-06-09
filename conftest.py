@@ -7,7 +7,7 @@ def pytest_addoption(parser):
     group._addoption(
         '--rspecify', action="store_true", dest="rspecify", default=False,
         help=(
-            "make pyrest reporting output more readable"
+            "make pytest reporting output more readable"
             "default)."
         )
     )
@@ -22,7 +22,7 @@ def pytest_configure(config):
         standard_reporter = config.pluginmanager.getplugin('terminalreporter')
         rspecify_reporter = RspecifiedTerminalReporter(standard_reporter)
 
-        # ...and replace it with our own instafailing reporter.
+        # ...and replace it with our own rspecifying reporter.
         config.pluginmanager.unregister(standard_reporter)
         config.pluginmanager.register(rspecify_reporter, 'terminalreporter')
 
