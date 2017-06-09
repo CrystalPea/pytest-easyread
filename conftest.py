@@ -33,6 +33,15 @@ class RspecifiedTerminalReporter(TerminalReporter):
         self._tw = reporter._tw
         self.testfiles = []
 
+    def write_fspath_result(self, nodeid, res, **kwargs):
+        fspath = self.config.rootdir.join(nodeid.split("::")[0])
+        if fspath != self.currentfspath:
+            self.currentfspath = fspath
+            fspath = self.startdir.bestrelpath(fspath)
+            self._tw.line()
+            self._tw.write(fspath + " ", **kwargs)
+        self._tw.write(res)
+
     def write_ensure_prefix(self, prefix, extra="", **kwargs):
         if self.currentfspath != prefix:
             self._tw.line()
@@ -51,8 +60,10 @@ class RspecifiedTerminalReporter(TerminalReporter):
         elif self.showfspath:
             fsid = nodeid.split("::")[0]
             if fsid not in self.testfiles:
+                if self.testfiles != []:
+                    self._tw.line()
                 self.testfiles.append(fsid)
-                self.write_fspath_result(fsid, "")
+                self.write_fspath_result(fsid, "", **({'bold': True}))
 
     def pytest_runtest_logreport(self, report):
         rep = report
