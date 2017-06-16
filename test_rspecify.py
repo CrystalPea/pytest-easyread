@@ -20,11 +20,11 @@ class TestRspecifiedTerminalReporter(object):
         )
         testdir.makeconftest(self.conftest.read())
         result = testdir.runpytest('--rspecify')
-        
+
         result.stdout.fnmatch_lines([
             "test_list_of_tests_items_formatted_correctly*",
-            "failing function (FAILED)",
-            "passing function (PASSED)"
+            "  failing function (FAILED)",
+            "  passing function (PASSED)"
         ])
 
     def test_list_of_tests_has_empty_line_between_files(self, testdir):
@@ -40,7 +40,7 @@ class TestRspecifiedTerminalReporter(object):
         testdir.makeconftest(self.conftest.read())
         result = testdir.runpytest('--rspecify')
 
-        expected_result = "\n\ntest_list_of_tests.py \nfailing function (FAILED)\npassing function (PASSED)\n\ntest_list_of_tests2.py \nfailing function (FAILED)\npassing function (PASSED)"
+        expected_result = "\n\ntest_list_of_tests.py \n  failing function (FAILED)\n  passing function (PASSED)\n\ntest_list_of_tests2.py \n  failing function (FAILED)\n  passing function (PASSED)"
         assert expected_result in result.stdout.str()
 
     def test_class_name_for_tests_formatted_correctly(self, testdir):
@@ -57,5 +57,5 @@ class TestRspecifiedTerminalReporter(object):
         testdir.makeconftest(self.conftest.read())
         result = testdir.runpytest('--rspecify')
 
-        expected_result = "test_list_of_tests.py \nTestClassName \nfailing function (FAILED)\npassing function (PASSED)\n\ntest_list_of_tests2.py \nfailing function (FAILED)\npassing function (PASSED)"
+        expected_result = "test_list_of_tests.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)\n\ntest_list_of_tests2.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)"
         assert expected_result in result.stdout.str()

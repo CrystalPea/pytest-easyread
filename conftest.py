@@ -55,6 +55,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
     def write_path_name(self, nodeid):
         filename = nodeid.split("::")[0]
         if filename not in self.testfiles:
+            self.testclasses = []
             if self.testfiles != []:
                 self._tw.line()
             self.testfiles.append(filename)
@@ -66,7 +67,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
             classname = nodeid.split("::")[1]
             if classname not in self.testclasses:
                 self.testclasses.append(classname)
-                self.write_fspath_result(classname, "")
+                self.write_fspath_result("  {}".format(classname), "")
 
     def pytest_runtest_logstart(self, nodeid, location):
         # ensure that the path is printed before the
@@ -110,7 +111,10 @@ class RspecifiedTerminalReporter(TerminalReporter):
         line = self._locationline(rep.nodeid, *rep.location)
         if not hasattr(rep, 'node'):
             word = "({})".format(word)
-            self.write_ensure_prefix(test_title, word, **markup)
+            if len(rep.nodeid.split("::")) >= 3:
+                self.write_ensure_prefix("    {}".format(test_title), word, **markup)
+            else:
+                self.write_ensure_prefix("  {}".format(test_title), word, **markup)
             #self._tw.write(word, **markup)
         else:
             self.ensure_newline()
