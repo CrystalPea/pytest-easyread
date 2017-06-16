@@ -35,6 +35,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
         self.testclasses = []
 
     def write_fspath_result(self, nodeid, res, **kwargs):
+        # inbuilt pytest reporter method; changes made: added **kwargs to add markup to path name
         fspath = self.config.rootdir.join(nodeid.split("::")[0])
         if fspath != self.currentfspath:
             self.currentfspath = fspath
@@ -44,6 +45,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
         self._tw.write(res)
 
     def write_ensure_prefix(self, prefix, extra="", **kwargs):
+        # inbuilt pytest reporter method; changes made: added **kwargs to add markup to titles of tests
         if self.currentfspath != prefix:
             self._tw.line()
             self.currentfspath = prefix
@@ -53,16 +55,19 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self.currentfspath = -2
 
     def write_path_name(self, nodeid):
-        filename = nodeid.split("::")[0]
-        if filename not in self.testfiles:
+        # called from `pytest_runtest_logstart`:
+        # responsible for writing bold path name above list of all tests for that file
+        pathname = nodeid.split("::")[0]
+        if pathname not in self.testfiles:
             self.testclasses = []
             if self.testfiles != []:
                 self._tw.line()
-            self.testfiles.append(filename)
-            self.write_fspath_result(filename, "", **({'bold': True}))
-            self.write_class_name(nodeid)
+            self.testfiles.append(pathname)
+            self.write_fspath_result(pathname, "", **({'bold': True}))
 
     def write_class_name(self, nodeid):
+        # called from `pytest_runtest_logstart`:
+        # responsible for writing class name above list of all tests for that class
         if len(nodeid.split("::")) >= 3:
             classname = nodeid.split("::")[1]
             if classname not in self.testclasses:
@@ -70,8 +75,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
                 self.write_fspath_result("  {}".format(classname), "")
 
     def pytest_runtest_logstart(self, nodeid, location):
-        # ensure that the path is printed before the
-        # 1st test of a module starts running
+        # inbuilt pytest reporter method; extended with `write_path_name` and `write_class_name`
         if self.showlongtestinfo:
             line = self._locationline(nodeid, *location)
             self.write_ensure_prefix(line, "")
@@ -80,6 +84,10 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self.write_class_name(nodeid)
 
     def pytest_runtest_logreport(self, report):
+        # inbuilt pytest reporter method; changes made:
+        # test_title introduced. It formats test title to make it more readable
+        # checking for verbosity is turned off (verbose by default) as this plugin works best for verbose mode.
+        # indentation and markup for test title introduced
         rep = report
         test_title = (rep.nodeid.split("::")[-1]).split("_")
         if test_title[0].lower() == "test":
