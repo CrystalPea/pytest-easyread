@@ -32,6 +32,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
         TerminalReporter.__init__(self, reporter.config)
         self._tw = reporter._tw
         self.testfiles = []
+        self.testclasses = []
 
     def write_fspath_result(self, nodeid, res, **kwargs):
         fspath = self.config.rootdir.join(nodeid.split("::")[0])
@@ -51,6 +52,22 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self._tw.write(extra, **kwargs)
             self.currentfspath = -2
 
+    def write_path_name(self, nodeid):
+        filename = nodeid.split("::")[0]
+        if filename not in self.testfiles:
+            if self.testfiles != []:
+                self._tw.line()
+            self.testfiles.append(filename)
+            self.write_fspath_result(filename, "", **({'bold': True}))
+            self.write_class_name(nodeid)
+
+    def write_class_name(self, nodeid):
+        if len(nodeid.split("::")) >= 3:
+            classname = nodeid.split("::")[1]
+            if classname not in self.testclasses:
+                self.testclasses.append(classname)
+                self.write_fspath_result(classname, "")
+
     def pytest_runtest_logstart(self, nodeid, location):
         # ensure that the path is printed before the
         # 1st test of a module starts running
@@ -58,16 +75,12 @@ class RspecifiedTerminalReporter(TerminalReporter):
             line = self._locationline(nodeid, *location)
             self.write_ensure_prefix(line, "")
         elif self.showfspath:
-            fsid = nodeid.split("::")[0]
-            if fsid not in self.testfiles:
-                if self.testfiles != []:
-                    self._tw.line()
-                self.testfiles.append(fsid)
-                self.write_fspath_result(fsid, "", **({'bold': True}))
+            self.write_path_name(nodeid)
+            self.write_class_name(nodeid)
 
     def pytest_runtest_logreport(self, report):
         rep = report
-        test_title = (report.location[2]).split("_")
+        test_title = (rep.nodeid.split("::")[-1]).split("_")
         if test_title[0].lower() == "test":
             test_title.pop(0)
         test_title = " ".join(test_title)
