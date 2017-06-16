@@ -52,10 +52,13 @@ class TestRspecifiedTerminalReporter(object):
 
                 def test_passing_function(self):
                     assert 1 == 1
+            class TestSecondClass(object):
+                def test_passing_function(self):
+                    assert 1 == 1
             """
         testdir.makepyfile(test_list_of_tests=test_content,test_list_of_tests2=test_content)
         testdir.makeconftest(self.conftest.read())
         result = testdir.runpytest('--rspecify')
 
-        expected_result = "test_list_of_tests.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)\n\ntest_list_of_tests2.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)"
+        expected_result = "test_list_of_tests.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)\n  TestSecondClass \n    passing function (PASSED)\n\ntest_list_of_tests2.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)"
         assert expected_result in result.stdout.str()
