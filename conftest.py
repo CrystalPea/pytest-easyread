@@ -72,7 +72,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
             classname = nodeid.split("::")[1]
             if classname not in self.testclasses:
                 self.testclasses.append(classname)
-                self.write_fspath_result("  {}".format(classname), "")
+                self.write_fspath_result("  " + classname, "")
 
     def pytest_runtest_logstart(self, nodeid, location):
         # inbuilt pytest reporter method; extended with `write_path_name` and `write_class_name`
@@ -120,9 +120,10 @@ class RspecifiedTerminalReporter(TerminalReporter):
         if not hasattr(rep, 'node'):
             word = "({})".format(word)
             if len(rep.nodeid.split("::")) >= 3:
-                self.write_ensure_prefix("    {}".format(test_title), word, **markup)
+                indentation = "    "
             else:
-                self.write_ensure_prefix("  {}".format(test_title), word, **markup)
+                indentation = "  "
+            self.write_ensure_prefix(indentation + test_title, word, **markup)
             #self._tw.write(word, **markup)
         else:
             self.ensure_newline()
