@@ -132,3 +132,26 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self._tw.write(word, **markup)
             self._tw.write(" " + line)
             self.currentfspath = -2
+
+    # Reporting failures
+    def summary_failures(self):
+        if self.config.option.tbstyle != "no":
+            reports = self.getreports('failed')
+            if not reports:
+                return
+            self.write_sep(".  ", "FAILURES", **{"bold": True})
+            index = 1
+            for rep in reports:
+                if self.config.option.tbstyle == "line":
+                    line = self._getcrashline(rep)
+                    print("HERE?")
+                    self.write_line(line)
+                else:
+                    msg = self._getfailureheadline(rep)
+                    markup = {'red': True, 'bold': True}
+                    self.write_ensure_prefix(str(index) + ". " + msg, **markup)
+                    index += 1
+                    self._outrep_summary(rep)
+                    for report in self.getreports(''):
+                        if report.nodeid == rep.nodeid and report.when == 'teardown':
+                            self.print_teardown_sections(report)
