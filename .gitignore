@@ -2,3 +2,5 @@ venv*
 .cache
 __pycache__
 *.pyc
+test_example_logic.py
+filetotest.py
