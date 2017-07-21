@@ -12,7 +12,6 @@ def pytest_addoption(parser):
         )
     )
 
-
 @pytest.mark.trylast
 def pytest_configure(config):
     if hasattr(config, 'slaveinput'):
@@ -83,18 +82,22 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self.write_path_name(nodeid)
             self.write_class_name(nodeid)
 
+    def get_formatted_test_title(self, report):
+        test_title = (report.nodeid.split("::")[-1]).split("_")
+        if test_title[0].lower() == "test":
+            test_title.pop(0)
+        test_title = " ".join(test_title)
+        return test_title
+
     def pytest_runtest_logreport(self, report):
         # inbuilt pytest reporter method; changes made:
         # test_title introduced. It formats test title to make it more readable
         # checking for verbosity is turned off (verbose by default) as this plugin works best for verbose mode.
         # indentation and markup for test title introduced
         rep = report
-        test_title = (rep.nodeid.split("::")[-1]).split("_")
-        if test_title[0].lower() == "test":
-            test_title.pop(0)
-        test_title = " ".join(test_title)
+        test_title = self.get_formatted_test_title(rep)
         test_title += " "
-        res = self.config.hook.pytest_report_teststatus(report=report)
+        res = self.config.hook.pytest_report_teststatus(report=rep)
         cat, letter, word = res
         self.stats.setdefault(cat, []).append(rep)
         self._tests_ran = True
@@ -134,6 +137,12 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self.currentfspath = -2
 
     # Reporting failures
+    def get_failure_title(self, rep):
+        if len(rep.nodeid.split("::")) >= 3:
+            return rep.nodeid.split("::")[1] + ": " + self.get_formatted_test_title(rep)
+        else:
+             return self.get_formatted_test_title(rep)
+
     def summary_failures(self):
         if self.config.option.tbstyle != "no":
             reports = self.getreports('failed')
@@ -142,12 +151,12 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self.write_sep(".  ", "FAILURES", **{"bold": True})
             index = 1
             for rep in reports:
+                rep.longrepr.reprtraceback.entrysep = ' '
                 if self.config.option.tbstyle == "line":
                     line = self._getcrashline(rep)
-                    print("HERE?")
                     self.write_line(line)
                 else:
-                    msg = self._getfailureheadline(rep)
+                    msg = self.get_failure_title(rep)
                     markup = {'red': True, 'bold': True}
                     self.write_ensure_prefix(str(index) + ". " + msg, **markup)
                     index += 1
