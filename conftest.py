@@ -32,6 +32,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
         self._tw = reporter._tw
         self.testfiles = []
         self.testclasses = []
+        self.is_first_failure = True
 
     def write_fspath_result(self, nodeid, res, **kwargs):
         # inbuilt pytest reporter method; changes made: added **kwargs to add markup to path name
@@ -143,6 +144,20 @@ class RspecifiedTerminalReporter(TerminalReporter):
         else:
              return self.get_formatted_test_title(rep)
 
+    #based on `sep` method of the TerminalWriter's class
+    def ljust_sep(self, rep, sepchar, title=None, fullwidth=None, **kw):
+        if fullwidth is None:
+            fullwidth = self._tw.fullwidth
+        if title is not None:
+            N = (fullwidth - len(title) - 2) // (2*len(sepchar))
+            fill = sepchar * N * 2
+            line = "%s %s" % (title, fill)
+        else:
+            line = sepchar * (fullwidth // len(sepchar))
+        if len(line) + len(sepchar.rstrip()) <= fullwidth:
+            line += sepchar.rstrip()
+        self._tw.line(line, **kw)
+
     def summary_failures(self):
         if self.config.option.tbstyle != "no":
             reports = self.getreports('failed')
@@ -158,7 +173,13 @@ class RspecifiedTerminalReporter(TerminalReporter):
                 else:
                     msg = self.get_failure_title(rep)
                     markup = {'red': True, 'bold': True}
-                    self.write_ensure_prefix(str(index) + ". " + msg, **markup)
+                    title = str(index) + ". " + msg
+                    sepchar = " . "
+                    self._tw.line()
+                    if self.is_first_failure == False:
+                        self._tw.line()
+                    self.ljust_sep(rep, sepchar, title, **markup)
+                    self.is_first_failure = False
                     index += 1
                     self._outrep_summary(rep)
                     for report in self.getreports(''):

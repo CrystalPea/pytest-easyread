@@ -80,10 +80,8 @@ class TestRspecifiedTerminalReporter(object):
         testdir.makeconftest(self.conftest.read())
         result = testdir.runpytest('--rspecify')
 
-        result.stdout.fnmatch_lines([
-            "1. TestClassName: zero is truthy",
-            "2. one equals two",
-        ])
+        assert "1. TestClassName: zero is truthy  .  .  . " and "2. one equals two  .  .  . " in result.stdout.str()
+
 
     def test_there_are_no_separator_dashes_within_report_messages(self, testdir):
         test_content = """
@@ -106,3 +104,34 @@ class TestRspecifiedTerminalReporter(object):
         result = testdir.runpytest('--rspecify')
         banished_separator = "_ _ _ _"
         assert banished_separator not in result.stdout.str()
+
+    def test_there_are_two_empty_lines_before_second_failure(self, testdir):
+        test_content = """
+            import pytest
+            def test_failing_function():
+                assert 0
+
+            def test_failing_function_no2():
+                assert 1 != 1
+            """
+        testdir.makepyfile(test_list_of_tests=test_content)
+        testdir.makeconftest(self.conftest.read())
+        result = testdir.runpytest('--rspecify')
+        expected_result = "test_list_of_tests.py:3: AssertionError\n\n\n2. failing function no2"
+        assert expected_result in result.stdout.str()
+
+    def test_there_is_one_empty_line_before_first_failure(self, testdir):
+        test_content = """
+            import pytest
+            def test_failing_function():
+                assert 0
+
+            def test_failing_function_no2():
+                assert 1 != 1
+            """
+        testdir.makepyfile(test_list_of_tests=test_content)
+        testdir.makeconftest(self.conftest.read())
+        result = testdir.runpytest('--rspecify')
+        expected_result_1 = " \n\n1. failing function"
+        expected_result_2 = " \n\n1. failing function"
+        assert expected_result_1 or expected_result_2 in result.stdout.str()
