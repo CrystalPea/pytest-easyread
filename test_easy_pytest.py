@@ -19,7 +19,7 @@ class TestRspecifiedTerminalReporter(object):
             """
         )
         testdir.makeconftest(self.conftest.read())
-        result = testdir.runpytest('--rspecify')
+        result = testdir.runpytest('--easy')
 
         result.stdout.fnmatch_lines([
             "test_list_of_tests_items_formatted_correctly*",
@@ -38,7 +38,7 @@ class TestRspecifiedTerminalReporter(object):
             """
         testdir.makepyfile(test_list_of_tests=test_content,test_list_of_tests2=test_content)
         testdir.makeconftest(self.conftest.read())
-        result = testdir.runpytest('--rspecify')
+        result = testdir.runpytest('--easy')
 
         expected_result = "\n\ntest_list_of_tests.py \n  failing function (FAILED)\n  passing function (PASSED)\n\ntest_list_of_tests2.py \n  failing function (FAILED)\n  passing function (PASSED)"
         assert expected_result in result.stdout.str()
@@ -58,7 +58,7 @@ class TestRspecifiedTerminalReporter(object):
             """
         testdir.makepyfile(test_list_of_tests=test_content,test_list_of_tests2=test_content)
         testdir.makeconftest(self.conftest.read())
-        result = testdir.runpytest('--rspecify')
+        result = testdir.runpytest('--easy')
 
         expected_result = "test_list_of_tests.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)\n  TestSecondClass \n    passing function (PASSED)\n\ntest_list_of_tests2.py \n  TestClassName \n    failing function (FAILED)\n    passing function (PASSED)"
         assert expected_result in result.stdout.str()
@@ -78,7 +78,7 @@ class TestRspecifiedTerminalReporter(object):
             """
         testdir.makepyfile(test_list_of_tests=test_content,test_list_of_tests2=test_content)
         testdir.makeconftest(self.conftest.read())
-        result = testdir.runpytest('--rspecify')
+        result = testdir.runpytest('--easy')
 
         assert "1. TestClassName: zero is truthy  .  .  . " and "2. one equals two  .  .  . " in result.stdout.str()
 
@@ -101,7 +101,7 @@ class TestRspecifiedTerminalReporter(object):
             """
         testdir.makepyfile(test_list_of_tests=test_content,test_list_of_tests2=test_content, do_not_panic=do_not_panic)
         testdir.makeconftest(self.conftest.read())
-        result = testdir.runpytest('--rspecify')
+        result = testdir.runpytest('--easy')
         banished_separator = "_ _ _ _"
         assert banished_separator not in result.stdout.str()
 
@@ -116,7 +116,7 @@ class TestRspecifiedTerminalReporter(object):
             """
         testdir.makepyfile(test_list_of_tests=test_content)
         testdir.makeconftest(self.conftest.read())
-        result = testdir.runpytest('--rspecify')
+        result = testdir.runpytest('--easy')
         expected_result = "test_list_of_tests.py:3: AssertionError\n\n\n2. failing function no2"
         assert expected_result in result.stdout.str()
 
@@ -131,7 +131,7 @@ class TestRspecifiedTerminalReporter(object):
             """
         testdir.makepyfile(test_list_of_tests=test_content)
         testdir.makeconftest(self.conftest.read())
-        result = testdir.runpytest('--rspecify')
+        result = testdir.runpytest('--easy')
         expected_result_1 = " \n\n1. failing function"
-        expected_result_2 = " \n\n1. failing function"
+        expected_result_2 = ".\n\n1. failing function"
         assert expected_result_1 or expected_result_2 in result.stdout.str()
