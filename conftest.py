@@ -156,6 +156,13 @@ class RspecifiedTerminalReporter(TerminalReporter):
             line += sepchar.rstrip()
         self._tw.line(line, **kw)
 
+    # inbuilt pytest reporter method; changes made:
+    # change separator for FAILURES heading
+    # add index numbers for titles of failing tests
+    # get rid of dashes separating snippets of code from test file and tested file within failure message for a test;
+    # add an empty line between report printouts for failing tests
+    # format title of failing test and change separator from an equal sign to a dot surrounded by whitespace
+    # and move the title from the centre to the left;
     def summary_failures(self):
         if self.config.option.tbstyle != "no":
             reports = self.getreports('failed')
