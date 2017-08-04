@@ -1,8 +1,24 @@
 # pytest-easyread
 
-This is a pytest plugin that aims to make the way pytest reports to terminal easier to read.  
+This is a pytest plugin that aims to make the way pytest reports to terminal easier to read.
 
-To use it add --easy flag when you run the tests, like this:
+### Requirements
+
+You will need the following prerequisites in order to use pytest-easyread:  
+
+Python (tested on versions 2.7 and 3.4)
+pytest 2.9 or newer  
+
+
+### Installation
+
+To install pytest-easyread:  
+
 ```
-pytest --easy
+$ pip install pytest-easyread
 ```
+
+Then add --easy flag when you run the tests, like this:
+```
+$ pytest --easy
+ ```
