@@ -20,14 +20,14 @@ def pytest_configure(config):
     if config.option.easy:
         # Get the standard terminal reporter plugin...
         standard_reporter = config.pluginmanager.getplugin('terminalreporter')
-        easy_reporter = RspecifiedTerminalReporter(standard_reporter)
+        easy_reporter = EasyTerminalReporter(standard_reporter)
 
         # ...and replace it with our own easying reporter.
         config.pluginmanager.unregister(standard_reporter)
         config.pluginmanager.register(easy_reporter, 'terminalreporter')
 
 
-class RspecifiedTerminalReporter(TerminalReporter):
+class EasyTerminalReporter(TerminalReporter):
     def __init__(self, reporter):
         TerminalReporter.__init__(self, reporter.config)
         self._tw = reporter._tw
@@ -56,8 +56,6 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self.currentfspath = -2
 
     def _write_path_name(self, nodeid):
-        # called from `pytest_runtest_logstart`:
-        # responsible for writing bold path name above list of all tests for that file
         pathname = nodeid.split("::")[0]
         if pathname not in self.testfiles:
             self.testclasses = []
@@ -67,13 +65,11 @@ class RspecifiedTerminalReporter(TerminalReporter):
             self.write_fspath_result(pathname, "", **({'bold': True}))
 
     def _write_class_name(self, nodeid):
-        # called from `pytest_runtest_logstart`:
-        # responsible for writing class name above list of all tests for that class
         if len(nodeid.split("::")) >= 3:
             classname = nodeid.split("::")[1]
             if classname not in self.testclasses:
                 self.testclasses.append(classname)
-                self.write_fspath_result("  " + classname, "")
+                self.write_fspath_result(" "*2 + classname, "")
 
     def pytest_runtest_logstart(self, nodeid, location):
         # inbuilt pytest reporter method; extended with `write_path_name` and `write_class_name`
@@ -93,21 +89,20 @@ class RspecifiedTerminalReporter(TerminalReporter):
 
     def _add_indentation_for_tests_list_item(self, report):
         if len(report.nodeid.split("::")) >= 3:
-            return "    "
+            return " "*4
         else:
-            return "  "
+            return " "*2
 
     def pytest_runtest_logreport(self, report):
         # inbuilt pytest reporter method; changes made:
         # get_formatted_test_title() introduced. It formats test title to make it more readable
         # checking for verbosity is turned off (verbose by default) as this plugin works best for verbose mode.
         # indentation and markup for test title introduced
-        rep = report
-        test_title = self._get_formatted_test_title(rep)
+        test_title = self._get_formatted_test_title(report)
         test_title += " "
-        res = self.config.hook.pytest_report_teststatus(report=rep)
+        res = self.config.hook.pytest_report_teststatus(report=report)
         cat, letter, word = res
-        self.stats.setdefault(cat, []).append(rep)
+        self.stats.setdefault(cat, []).append(report)
         self._tests_ran = True
         if not letter and not word:
             # probably passed setup/teardown
@@ -115,21 +110,21 @@ class RspecifiedTerminalReporter(TerminalReporter):
         if isinstance(word, tuple):
             word, markup = word
         else:
-            if rep.passed:
+            if report.passed:
                 markup = {'green':True}
-            elif rep.failed:
+            elif report.failed:
                 markup = {'red':True}
-            elif rep.skipped:
+            elif report.skipped:
                 markup = {'yellow':True}
-        line = self._locationline(rep.nodeid, *rep.location)
-        if not hasattr(rep, 'node'):
-            word = "({})".format(word)
-            indentation = self._add_indentation_for_tests_list_item(rep)
+        line = self._locationline(report.nodeid, *report.location)
+        if not hasattr(report, 'node'):
+            word = "(%s)" % word
+            indentation = self._add_indentation_for_tests_list_item(report)
             self.write_ensure_prefix(indentation + test_title, word, **markup)
         else:
             self.ensure_newline()
-            if hasattr(rep, 'node'):
-                self._tw.write("[%s] " % rep.node.gateway.id)
+            if hasattr(report, 'node'):
+                self._tw.write("[%s] " % report.node.gateway.id)
             self._tw.write(word, **markup)
             self._tw.write(" " + line)
             self.currentfspath = -2
@@ -141,7 +136,7 @@ class RspecifiedTerminalReporter(TerminalReporter):
         else:
              return self._get_formatted_test_title(rep)
 
-    #based on `sep` method of the TerminalWriter's class
+    # based on `sep` method of the TerminalWriter's class
     def _ljust_sep(self, rep, sepchar, title=None, fullwidth=None, **kw):
         self._tw.line()
         if fullwidth is None:

@@ -3,7 +3,7 @@
 pytest_plugins = "pytester"
 import pytest
 
-class TestRspecifiedTerminalReporter(object):
+class TestEasyTerminalReporter(object):
 
     def setup_method(self, method):
         self.conftest = open("./conftest.py", "r")
