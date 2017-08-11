@@ -82,6 +82,25 @@ class TestEasyTerminalReporter(object):
 
         assert "1. TestClassName: zero is truthy  .  .  . " and "2. one equals two  .  .  . " in result.stdout.str()
 
+    def test_failure_path_is_visible(self, testdir):
+        test_content = """
+            import pytest
+            class TestClassName(object):
+                def test_zero_is_truthy(self):
+                    assert 0
+
+                def test_passing_function(self):
+                    assert 1 == 1
+
+            def test_one_equals_two():
+                assert 1 == 2
+            """
+        testdir.makepyfile(test_list_of_tests=test_content)
+        testdir.makeconftest(self.conftest.read())
+        result = testdir.runpytest('--easy')
+
+        assert "test_list_of_tests.py:::TestClassName::test_zero_is_truthy" and "test_list_of_tests.py::test_one_equals_two" in result.stdout.str()
+
 
     def test_there_are_no_separator_dashes_within_report_messages(self, testdir):
         test_content = """

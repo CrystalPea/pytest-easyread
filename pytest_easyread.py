@@ -180,6 +180,8 @@ class EasyTerminalReporter(TerminalReporter):
                     self._ljust_sep(rep, sepchar, title, **markup)
                     self.is_first_failure = False
                     index += 1
+                    self._tw.write("Path: " + rep.nodeid)
+                    self._tw.line()
                     self._outrep_summary(rep)
                     for report in self.getreports(''):
                         if report.nodeid == rep.nodeid and report.when == 'teardown':
