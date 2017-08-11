@@ -6,7 +6,7 @@ import pytest
 class TestEasyTerminalReporter(object):
 
     def setup_method(self, method):
-        self.conftest = open("./conftest.py", "r")
+        self.conftest = open("./pytest_easyread.py", "r")
 
     def test_list_of_tests_items_formatted_correctly(self, testdir):
         testdir.makepyfile("""
