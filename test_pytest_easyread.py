@@ -99,7 +99,9 @@ class TestEasyTerminalReporter(object):
         testdir.makeconftest(self.conftest.read())
         result = testdir.runpytest('--easy')
 
-        assert "test_list_of_tests.py:::TestClassName::test_zero_is_truthy" and "test_list_of_tests.py::test_one_equals_two" in result.stdout.str()
+        expected_line_1 = "   Path: test_list_of_tests.py::TestClassName::test_zero_is_truthy"
+        expected_line_2 = "   Path: test_list_of_tests.py::test_one_equals_two"
+        assert expected_line_1  and expected_line_2 in result.stdout.str()
 
 
     def test_there_are_no_separator_dashes_within_report_messages(self, testdir):

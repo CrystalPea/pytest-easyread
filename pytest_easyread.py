@@ -180,7 +180,8 @@ class EasyTerminalReporter(TerminalReporter):
                     self._ljust_sep(rep, sepchar, title, **markup)
                     self.is_first_failure = False
                     index += 1
-                    self._tw.write("Path: " + rep.nodeid)
+                    failed_test_path = self._locationline(rep.nodeid, *rep.location)
+                    self._tw.write(" "*3 + "Path: " + failed_test_path)
                     self._tw.line()
                     self._outrep_summary(rep)
                     for report in self.getreports(''):
