@@ -156,3 +156,21 @@ class TestEasyTerminalReporter(object):
         expected_result_1 = " \n\n1. failing function"
         expected_result_2 = ".\n\n1. failing function"
         assert expected_result_1 or expected_result_2 in result.stdout.str()
+
+    def test_pytest_easyread_works_with_parametrize(self, testdir):
+        test_content = """
+            import pytest
+            @pytest.mark.parametrize("number", [4,5,6])
+            def test_number_divisible_by_2(number):
+                assert number % 2 == 0
+            """
+        testdir.makepyfile(test_list_of_tests=test_content)
+        testdir.makeconftest(self.conftest.read())
+        result = testdir.runpytest('--easy')
+        expected_lines = [
+            "test_list_of_tests.py",
+            "number divisible by 2[4] (PASSED)",
+            "number divisible by 2[5] (FAILED)",
+            "number divisible by 2[6] (PASSED)"
+        ]
+        assert all(expected_line in result.stdout.str() for expected_line in expected_lines)
