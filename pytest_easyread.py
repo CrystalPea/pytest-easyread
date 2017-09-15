@@ -59,7 +59,7 @@ class EasyTerminalReporter(TerminalReporter):
         pathname = nodeid.split("::")[0]
         if pathname not in self.testfiles:
             self.testclasses = []
-            if self.testfiles != []:
+            if self.testfiles:
                 self._tw.line()
             self.testfiles.append(pathname)
             self.write_fspath_result(pathname, "", **({'bold': True}))
@@ -151,6 +151,22 @@ class EasyTerminalReporter(TerminalReporter):
             line += sepchar.rstrip()
         self._tw.line(line, **kw)
 
+    def _write_failed_test_title(self, rep, index):
+        msg = self._get_failure_title(rep)
+        markup = {'red': True, 'bold': True}
+        title = str(index) + ". " + msg
+        sepchar = " . "
+        if not self.is_first_failure:
+            self._tw.line()
+        self._ljust_sep(rep, sepchar, title, **markup)
+        self.is_first_failure = False
+
+    # prints the path to the failed test, containing location, class and name of the test;
+    def _write_failed_test_path(self, rep):
+        failed_test_path = self._locationline(rep.nodeid, *rep.location)
+        self._tw.write(" "*3 + "Path: " + failed_test_path)
+        self._tw.line()
+
     # inbuilt pytest reporter method; changes made:
     # change separator for FAILURES heading
     # add index numbers for titles of failing tests
@@ -158,6 +174,7 @@ class EasyTerminalReporter(TerminalReporter):
     # add an empty line between report printouts for failing tests
     # format title of failing test and change separator from an equal sign to a dot surrounded by whitespace
     # and move the title from the centre to the left;
+    # call function that prints the path to the failing test below test title;
     def summary_failures(self):
         if self.config.option.tbstyle != "no":
             reports = self.getreports('failed')
@@ -171,18 +188,9 @@ class EasyTerminalReporter(TerminalReporter):
                     line = self._getcrashline(rep)
                     self.write_line(line)
                 else:
-                    msg = self._get_failure_title(rep)
-                    markup = {'red': True, 'bold': True}
-                    title = str(index) + ". " + msg
-                    sepchar = " . "
-                    if self.is_first_failure == False:
-                        self._tw.line()
-                    self._ljust_sep(rep, sepchar, title, **markup)
-                    self.is_first_failure = False
+                    self._write_failed_test_title(rep, index)
                     index += 1
-                    failed_test_path = self._locationline(rep.nodeid, *rep.location)
-                    self._tw.write(" "*3 + "Path: " + failed_test_path)
-                    self._tw.line()
+                    self._write_failed_test_path(rep)
                     self._outrep_summary(rep)
                     for report in self.getreports(''):
                         if report.nodeid == rep.nodeid and report.when == 'teardown':
