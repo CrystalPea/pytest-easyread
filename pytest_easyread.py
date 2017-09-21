@@ -36,7 +36,10 @@ class EasyTerminalReporter(TerminalReporter):
         self.is_first_failure = True
 
     def write_fspath_result(self, nodeid, res, **kwargs):
-        # inbuilt pytest reporter method; changes made: added **kwargs to add markup to path name
+        """
+        inbuilt pytest reporter method;
+        changes made: added **kwargs to enable adding markup to path name
+        """
         fspath = self.config.rootdir.join(nodeid.split("::")[0])
         if fspath != self.currentfspath:
             self.currentfspath = fspath
@@ -46,7 +49,10 @@ class EasyTerminalReporter(TerminalReporter):
         self._tw.write(res)
 
     def write_ensure_prefix(self, prefix, extra="", **kwargs):
-        # inbuilt pytest reporter method; changes made: added **kwargs to add markup to titles of tests
+        """
+        inbuilt pytest reporter method;
+        changes made: added **kwargs to enable adding markup to titles of tests
+        """
         if self.currentfspath != prefix:
             self._tw.line()
             self.currentfspath = prefix
@@ -72,7 +78,10 @@ class EasyTerminalReporter(TerminalReporter):
                 self.write_fspath_result(" "*2 + classname, "")
 
     def pytest_runtest_logstart(self, nodeid, location):
-        # inbuilt pytest reporter method; extended with `write_path_name` and `write_class_name`
+        """
+        inbuilt pytest reporter method;
+        changes made: extended with _write_path_name() and _write_class_name()
+        """
         if self.showlongtestinfo:
             line = self._locationline(nodeid, *location)
             self.write_ensure_prefix(line, "")
@@ -94,10 +103,14 @@ class EasyTerminalReporter(TerminalReporter):
             return " "*2
 
     def pytest_runtest_logreport(self, report):
-        # inbuilt pytest reporter method; changes made:
-        # get_formatted_test_title() introduced. It formats test title to make it more readable
-        # checking for verbosity is turned off (verbose by default) as this plugin works best for verbose mode.
-        # indentation and markup for test title introduced
+        """
+        inbuilt pytest reporter method;
+        changes made:
+            _get_formatted_test_title() introduced. It formats test title to make it more human-readable;
+            _add_indentation_for_tests_list_item() introduced.
+            checking for verbosity is turned off (verbose by default) as this plugin works best in verbose mode;
+            indentation and markup for test title introduced;
+        """
         test_title = self._get_formatted_test_title(report)
         test_title += " "
         res = self.config.hook.pytest_report_teststatus(report=report)
@@ -129,15 +142,17 @@ class EasyTerminalReporter(TerminalReporter):
             self._tw.write(" " + line)
             self.currentfspath = -2
 
-    # Reporting failures
+    # Functions for reporting failures live below this point
     def _get_failure_title(self, rep):
         if len(rep.nodeid.split("::")) >= 3:
             return rep.nodeid.split("::")[1] + ": " + self._get_formatted_test_title(rep)
         else:
              return self._get_formatted_test_title(rep)
 
-    # based on `sep` method of the TerminalWriter's class
     def _ljust_sep(self, rep, sepchar, title=None, fullwidth=None, **kw):
+        """
+        based on sep() method of the TerminalWriter's class
+        """
         self._tw.line()
         if fullwidth is None:
             fullwidth = self._tw.fullwidth
@@ -161,21 +176,28 @@ class EasyTerminalReporter(TerminalReporter):
         self._ljust_sep(rep, sepchar, title, **markup)
         self.is_first_failure = False
 
-    # prints the path to the failed test, containing location, class and name of the test;
     def _write_failed_test_path(self, rep):
+        """
+        prints the path to the failed test, containing location, class and name of the test;
+        :param rep: this is a failed test report (type: object)
+        :return: None
+        """
         failed_test_path = self._locationline(rep.nodeid, *rep.location)
         self._tw.write(" "*3 + "Path: " + failed_test_path)
         self._tw.line()
 
-    # inbuilt pytest reporter method; changes made:
-    # change separator for FAILURES heading
-    # add index numbers for titles of failing tests
-    # get rid of dashes separating snippets of code from test file and tested file within failure message for a test;
-    # add an empty line between report printouts for failing tests
-    # format title of failing test and change separator from an equal sign to a dot surrounded by whitespace
-    # and move the title from the centre to the left;
-    # call function that prints the path to the failing test below test title;
     def summary_failures(self):
+    """
+    inbuilt pytest reporter method;
+    changes made:
+        change separator for FAILURES heading
+        add index numbers for titles of failing tests
+        get rid of dashes separating snippets of code from test file and tested file within failure message for a test;
+        add an empty line between report printouts for failing tests
+        format title of failing test and change separator from an equal sign to a dot surrounded by whitespace
+        and move the title from the centre to the left;
+        call function that prints the path to the failing test below test title;
+    """
         if self.config.option.tbstyle != "no":
             reports = self.getreports('failed')
             if not reports:
