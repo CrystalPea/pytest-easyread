@@ -81,6 +81,8 @@ class EasyTerminalReporter(TerminalReporter):
         """
         inbuilt pytest reporter method;
         changes made: extended with _write_path_name() and _write_class_name()
+        :params nodeid: information about test path, class and name (type: string)
+        :return: None
         """
         if self.showlongtestinfo:
             line = self._locationline(nodeid, *location)
@@ -110,6 +112,8 @@ class EasyTerminalReporter(TerminalReporter):
             _add_indentation_for_tests_list_item() introduced.
             checking for verbosity is turned off (verbose by default) as this plugin works best in verbose mode;
             indentation and markup for test title introduced;
+        :param report: test report (type: object)
+        :return: None
         """
         test_title = self._get_formatted_test_title(report)
         test_title += " "
@@ -143,19 +147,28 @@ class EasyTerminalReporter(TerminalReporter):
             self.currentfspath = -2
 
     # Functions for reporting failures live below this point
-    def _get_failure_title(self, rep):
-        if len(rep.nodeid.split("::")) >= 3:
-            return rep.nodeid.split("::")[1] + ": " + self._get_formatted_test_title(rep)
+    def _get_failure_title(self, report):
+        """
+        :param report: report for a failing test (type: object)
+        :return: formatted title of a failing test prefixed with class name if any (type: string)
+        """
+        if len(report.nodeid.split("::")) >= 3:
+            return report.nodeid.split("::")[1] + ": " + self._get_formatted_test_title(report)
         else:
-             return self._get_formatted_test_title(rep)
+             return self._get_formatted_test_title(report)
 
-    def _ljust_sep(self, rep, sepchar, title=None, fullwidth=None, **kw):
+    def _ljust_sep(self, sepchar, title=None, **kwargs):
         """
         based on sep() method of the TerminalWriter's class
+        prints the title to terminal, formatted with markup parameters in **kwargs
+        and surrounded with sepchar to the fullwith dimension for emphasis
+        :param sepchar: a character filling whitespace around the title for emphasis (type: string)
+        :param title: title to be printed (type: string)
+        :param **kwargs: keyword arguments; here it's a dictionary containing markup details (type: dict)
+        :return: None
         """
         self._tw.line()
-        if fullwidth is None:
-            fullwidth = self._tw.fullwidth
+        fullwidth = self._tw.fullwidth
         if title is not None:
             N = (fullwidth - len(title) - 2) // len(sepchar)
             fill = sepchar * N
@@ -164,40 +177,41 @@ class EasyTerminalReporter(TerminalReporter):
             line = sepchar * (fullwidth // len(sepchar))
         if len(line) + len(sepchar.rstrip()) <= fullwidth:
             line += sepchar.rstrip()
-        self._tw.line(line, **kw)
+        self._tw.line(line, **kwargs)
 
-    def _write_failed_test_title(self, rep, index):
-        msg = self._get_failure_title(rep)
+    def _write_failed_test_title(self, report, index):
+        msg = self._get_failure_title(report)
         markup = {'red': True, 'bold': True}
         title = str(index) + ". " + msg
         sepchar = " . "
         if not self.is_first_failure:
             self._tw.line()
-        self._ljust_sep(rep, sepchar, title, **markup)
+        self._ljust_sep(sepchar, title, **markup)
         self.is_first_failure = False
 
-    def _write_failed_test_path(self, rep):
+    def _write_failed_test_path(self, report):
         """
         prints the path to the failed test, containing location, class and name of the test;
-        :param rep: this is a failed test report (type: object)
+        :param report: this is a failed test report (type: object)
         :return: None
         """
-        failed_test_path = self._locationline(rep.nodeid, *rep.location)
+        failed_test_path = self._locationline(report.nodeid, *report.location)
         self._tw.write(" "*3 + "Path: " + failed_test_path)
         self._tw.line()
 
     def summary_failures(self):
-    """
-    inbuilt pytest reporter method;
-    changes made:
-        change separator for FAILURES heading
-        add index numbers for titles of failing tests
-        get rid of dashes separating snippets of code from test file and tested file within failure message for a test;
-        add an empty line between report printouts for failing tests
-        format title of failing test and change separator from an equal sign to a dot surrounded by whitespace
-        and move the title from the centre to the left;
-        call function that prints the path to the failing test below test title;
-    """
+        """
+        inbuilt pytest reporter method;
+        changes made:
+            change separator for FAILURES heading
+            add index numbers for titles of failing tests
+            get rid of dashes separating snippets of code from test file and tested file within failure message for a test;
+            add an empty line between report printouts for failing tests
+            format title of failing test and change separator from an equal sign to a dot surrounded by whitespace
+            and move the title from the centre to the left;
+            call function that prints the path to the failing test below test title;
+        :return: None
+        """
         if self.config.option.tbstyle != "no":
             reports = self.getreports('failed')
             if not reports:
