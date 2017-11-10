@@ -82,6 +82,27 @@ class TestEasyTerminalReporter(object):
 
         assert "1. TestClassName: zero is truthy  .  .  . " and "2. one equals two  .  .  . " in result.stdout.str()
 
+    def test_failure_path_is_visible(self, testdir):
+        test_content = """
+            import pytest
+            class TestClassName(object):
+                def test_zero_is_truthy(self):
+                    assert 0
+
+                def test_passing_function(self):
+                    assert 1 == 1
+
+            def test_one_equals_two():
+                assert 1 == 2
+            """
+        testdir.makepyfile(test_list_of_tests=test_content)
+        testdir.makeconftest(self.conftest.read())
+        result = testdir.runpytest('--easy')
+
+        expected_line_1 = "   Path: test_list_of_tests.py::TestClassName::test_zero_is_truthy"
+        expected_line_2 = "   Path: test_list_of_tests.py::test_one_equals_two"
+        assert expected_line_1  and expected_line_2 in result.stdout.str()
+
 
     def test_there_are_no_separator_dashes_within_report_messages(self, testdir):
         test_content = """
@@ -135,3 +156,21 @@ class TestEasyTerminalReporter(object):
         expected_result_1 = " \n\n1. failing function"
         expected_result_2 = ".\n\n1. failing function"
         assert expected_result_1 or expected_result_2 in result.stdout.str()
+
+    def test_pytest_easyread_works_with_parametrize(self, testdir):
+        test_content = """
+            import pytest
+            @pytest.mark.parametrize("number", [4,5,6])
+            def test_number_divisible_by_2(number):
+                assert number % 2 == 0
+            """
+        testdir.makepyfile(test_list_of_tests=test_content)
+        testdir.makeconftest(self.conftest.read())
+        result = testdir.runpytest('--easy')
+        expected_lines = [
+            "test_list_of_tests.py",
+            "number divisible by 2[4] (PASSED)",
+            "number divisible by 2[5] (FAILED)",
+            "number divisible by 2[6] (PASSED)"
+        ]
+        assert all(expected_line in result.stdout.str() for expected_line in expected_lines)

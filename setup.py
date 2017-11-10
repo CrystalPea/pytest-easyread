@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name='pytest-easyread',
-    description='py.test plugin that makes terminal printouts of the reports easier to read',
+    description='pytest plugin that makes terminal printouts of the reports easier to read',
     long_description=open("README.md").read(),
-    version='0.0.0',
+    version='0.1.0',
     url='https://github.com/CrystalPea/pytest-easyread',
     license='BSD',
     author='Pea Tyczynska',
@@ -13,7 +13,7 @@ setup(
     zip_safe=False,
     include_package_data=True,
     platforms='any',
-    install_requires=['pytest>=2.9'],
+    install_requires=['pytest>=3.0.4'],
     classifiers=[
         "Framework :: Pytest"
     ]
