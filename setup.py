@@ -15,6 +15,8 @@ setup(
     platforms='any',
     install_requires=['pytest>=3.0.4'],
     classifiers=[
-        "Framework :: Pytest"
+        "Framework :: Pytest",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
     ]
 )
