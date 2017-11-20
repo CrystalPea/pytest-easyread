@@ -15,7 +15,7 @@ pytest 3.0.4 or newer
 To install pytest-easyread:  
 
 ```
-$ pip install git+https://github.com/CrystalPea/pytest-easyread.git
+$ pip install pytest-easyread
 ```
 
 Then add --easy flag when you run the tests, like this:
